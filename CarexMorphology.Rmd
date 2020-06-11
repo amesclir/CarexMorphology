@@ -1,0 +1,332 @@
+
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+
+Now we are going to work with BAMM
+
+```{r}
+library(BAMMtools)
+library(coda)
+
+##CULM
+## load data
+mytreebio <- read.tree("./phenotypeculm/Culm.tree")
+mcmcoutculm <- read.csv("./phenotypeculm/mcmc_out.txt")
+
+
+#phenotype evolution
+
+## create edata
+phenoculmedata <- getEventData(mytreebio, eventdata = "./phenotypeculm/event_data.txt", burnin=0.15, type = "trait")
+
+
+#### Check convergence
+plot(mcmcoutculm$logLik ~ mcmcoutculm$generation)
+
+burnstartculm <- floor(0.15 * nrow(mcmcoutculm))
+phenoculmpostburn <- mcmcoutculm[burnstartculm:nrow(mcmcoutculm), ]
+
+effectiveSize(phenoculmpostburn$N_shifts)
+effectiveSize(phenoculmpostburn$logLik)
+
+
+
+### Shift probabilities
+phenoculmshift_probs <- summary(phenoculmedata)
+phenoculmshift_probs
+write.csv(phenoculmshift_probs, file = "./phenotypeculm/phenoculmshift_probs.txt")
+
+### Bayes factors
+phenoculmbfmat <- computeBayesFactors(phenoculmpostburn, expectedNumberOfShifts=10, burnin=0.15)
+phenoculmbfmat
+write.csv(phenoculmbfmat, file = "./phenotypeculm/phenoculmbfmat.txt")
+
+#### PLOT CREDIBLE SHIFTS
+phenoculmcss <- credibleShiftSet(phenoculmedata, expectedNumberOfShifts=10, threshold=5, set.limit = 0.95)
+phenoculmcss
+
+plot.credibleshiftset(phenoculmcss)
+
+
+### PLOT BEST SHIFT
+dev.off()
+phenoculmbest <- getBestShiftConfiguration(phenoculmedata, expectedNumberOfShifts=10)
+phenoculmbest
+
+pdffn = paste0("phenoculm", ".best.pdf")
+pdf(file=pdffn, width=6, height=60)
+plot.bammdata(phenoculmbest, lwd = 2,label=T,cex=0.5)
+axisPhylo()
+addBAMMshifts(phenoculmbest, cex=3)
+dev.off()
+
+pdffn = paste0("pheno2culm", ".best.pdf")
+pdf(file=pdffn, width=6, height=18)
+plot.bammdata(phenoculmbest, lwd = 2,label=F,cex=0.5)
+axisPhylo()
+addBAMMshifts(phenoculmbest, cex=3)
+dev.off()
+
+pdffn = paste0("pheno3culm", ".best.pdf")
+pdf(file=pdffn, width=60, height=60)
+plot.bammdata(phenoculmbest, method= "polar", lwd = 2,label=T,cex=0.5)
+axisPhylo()
+addBAMMshifts(phenoculmbest, cex=3)
+dev.off()
+
+phenoculmbest$eventData
+write.csv(phenoculmbest$eventData, file ="./phenotypeculm/phenoculmbest.txt")
+culmMarginalBranchRateMatrix <- getMarginalBranchRateMatrix(phenoculmbest)
+
+
+##2nculm
+## load data
+mytreebio <- read.tree("./phenotype2nculm/Culm.tree")
+mcmcout2nculm <- read.csv("./phenotype2nculm/mcmc_out.txt")
+
+
+#phenotype evolution
+
+## create edata
+pheno2nculmedata <- getEventData(mytreebio, eventdata = "./phenotype2nculm/event_data.txt", burnin=0.15, type = "trait")
+
+
+#### Check convergence
+plot(mcmcout2nculm$logLik ~ mcmcout2nculm$generation)
+
+burnstart2nculm <- floor(0.15 * nrow(mcmcout2nculm))
+pheno2nculmpostburn <- mcmcout2nculm[burnstart2nculm:nrow(mcmcout2nculm), ]
+
+effectiveSize(pheno2nculmpostburn$N_shifts)
+effectiveSize(pheno2nculmpostburn$logLik)
+
+
+
+### Shift probabilities
+pheno2nculmshift_probs <- summary(pheno2nculmedata)
+pheno2nculmshift_probs
+write.csv(pheno2nculmshift_probs, file = "./phenotype2nculm/pheno2nculmshift_probs.txt")
+
+### Bayes factors
+pheno2nculmbfmat <- computeBayesFactors(pheno2nculmpostburn, expectedNumberOfShifts=10, burnin=0.15)
+pheno2nculmbfmat
+write.csv(pheno2nculmbfmat, file = "./phenotype2nculm/pheno2nculmbfmat.txt")
+
+#### PLOT CREDIBLE SHIFTS
+pheno2nculmcss <- credibleShiftSet(pheno2nculmedata, expectedNumberOfShifts=10, threshold=5, set.limit = 0.95)
+pheno2nculmcss
+
+plot.credibleshiftset(pheno2nculmcss)
+
+
+### PLOT BEST SHIFT
+dev.off()
+pheno2nculmbest <- getBestShiftConfiguration(pheno2nculmedata, expectedNumberOfShifts=10)
+pheno2nculmbest
+
+pdffn = paste0("pheno2nculm", ".best.pdf")
+pdf(file=pdffn, width=6, height=60)
+plot.bammdata(pheno2nculmbest, lwd = 2,label=T,cex=0.5)
+axisPhylo()
+addBAMMshifts(pheno2nculmbest, cex=3)
+dev.off()
+
+pdffn = paste0("pheno22nculm", ".best.pdf")
+pdf(file=pdffn, width=6, height=18)
+plot.bammdata(pheno2nculmbest, lwd = 2,label=F,cex=0.5)
+axisPhylo()
+addBAMMshifts(pheno2nculmbest, cex=3)
+dev.off()
+
+pdffn = paste0("pheno32nculm", ".best.pdf")
+pdf(file=pdffn, width=60, height=60)
+plot.bammdata(pheno2nculmbest, method= "polar", lwd = 2,label=T,cex=0.5)
+axisPhylo()
+addBAMMshifts(pheno2nculmbest, cex=3)
+dev.off()
+
+pheno2nculmbest$eventData
+write.csv(pheno2nculmbest$eventData, file ="./phenotype2nculm/pheno2nculmbest.txt")
+n2nculmMarginalBranchRateMatrix <- getMarginalBranchRateMatrix(pheno2nculmbest)
+
+
+morphobranch_matrix1 <- cbind (culmMarginalBranchRateMatrix$beta_branch_matrix, n2nculmMarginalBranchRateMatrix$beta_branch_matrix)
+morphobranch_matrix1
+colnames(morphobranch_matrix1) <- c("culm", "culm2n")
+write.csv(morphobranch_matrix1, file="morphobranch_matrix1.csv")
+morphobranch_matrix1 <- read.csv(file= "morphobranch_matrix1.csv")
+
+library(lmPerm)
+names(morphobranch_matrix1)
+dim(morphobranch_matrix1)
+class(morphobranch_matrix1)
+morphobranch_matrix1 <- morphobranch_matrix1[,2:3]
+
+summary(lmp(culm2n~culm,data=morphobranch_matrix1, perm="Exact"))
+
+
+##LateralInfl
+## load data
+mytreebio <- read.tree("./phenotypeLateralInfl/LateralInfl.tree")
+mcmcoutLateralInfl <- read.csv("./phenotypeLateralInfl/mcmc_out.txt")
+
+
+#phenotype evolution
+
+## create edata
+phenoLateralInfledata <- getEventData(mytreebio, eventdata = "./phenotypeLateralInfl/event_data.txt", burnin=0.15, type = "trait")
+
+
+#### Check convergence
+plot(mcmcoutLateralInfl$logLik ~ mcmcoutLateralInfl$generation)
+
+burnstartLateralInfl <- floor(0.15 * nrow(mcmcoutLateralInfl))
+phenoLateralInflpostburn <- mcmcoutLateralInfl[burnstartLateralInfl:nrow(mcmcoutLateralInfl), ]
+
+effectiveSize(phenoLateralInflpostburn$N_shifts)
+effectiveSize(phenoLateralInflpostburn$logLik)
+
+
+
+### Shift probabilities
+phenoLateralInflshift_probs <- summary(phenoLateralInfledata)
+phenoLateralInflshift_probs
+write.csv(phenoLateralInflshift_probs, file = "./phenotypeLateralInfl/phenoLateralInflshift_probs.txt")
+
+### Bayes factors
+phenoLateralInflbfmat <- computeBayesFactors(phenoLateralInflpostburn, expectedNumberOfShifts=10, burnin=0.15)
+phenoLateralInflbfmat
+write.csv(phenoLateralInflbfmat, file = "./phenotypeLateralInfl/phenoLateralInflbfmat.txt")
+
+#### PLOT CREDIBLE SHIFTS
+phenoLateralInflcss <- credibleShiftSet(phenoLateralInfledata, expectedNumberOfShifts=10, threshold=5, set.limit = 0.95)
+phenoLateralInflcss
+
+plot.credibleshiftset(phenoLateralInflcss)
+
+
+### PLOT BEST SHIFT
+dev.off()
+phenoLateralInflbest <- getBestShiftConfiguration(phenoLateralInfledata, expectedNumberOfShifts=10)
+phenoLateralInflbest
+
+pdffn = paste0("phenoLateralInfl", ".best.pdf")
+pdf(file=pdffn, width=6, height=60)
+plot.bammdata(phenoLateralInflbest, lwd = 2,label=T,cex=0.5)
+axisPhylo()
+addBAMMshifts(phenoLateralInflbest, cex=3)
+dev.off()
+
+pdffn = paste0("pheno2LateralInfl", ".best.pdf")
+pdf(file=pdffn, width=6, height=18)
+plot.bammdata(phenoLateralInflbest, lwd = 2,label=F,cex=0.5)
+axisPhylo()
+addBAMMshifts(phenoLateralInflbest, cex=3)
+dev.off()
+
+pdffn = paste0("pheno3LateralInfl", ".best.pdf")
+pdf(file=pdffn, width=60, height=60)
+plot.bammdata(phenoLateralInflbest, method= "polar", lwd = 2,label=T,cex=0.5)
+axisPhylo()
+addBAMMshifts(phenoLateralInflbest, cex=3)
+dev.off()
+
+phenoLateralInflbest$eventData
+write.csv(phenoLateralInflbest$eventData, file ="./phenotypeLateralInfl/phenoLateralInflbest.txt")
+LateralInflMarginalBranchRateMatrix <- getMarginalBranchRateMatrix(phenoLateralInflbest)
+
+
+
+##2nLateralInfl
+## load data
+mytreebio <- read.tree("./phenotype2nLateralInfl/LateralInfl.tree")
+mcmcout2nLateralInfl <- read.csv("./phenotype2nLateralInfl/mcmc_out.txt")
+
+
+#phenotype evolution
+
+## create edata
+pheno2nLateralInfledata <- getEventData(mytreebio, eventdata = "./phenotype2nLateralInfl/event_data.txt", burnin=0.15, type = "trait")
+
+
+#### Check convergence
+plot(mcmcout2nLateralInfl$logLik ~ mcmcout2nLateralInfl$generation)
+
+burnstart2nLateralInfl <- floor(0.15 * nrow(mcmcout2nLateralInfl))
+pheno2nLateralInflpostburn <- mcmcout2nLateralInfl[burnstart2nLateralInfl:nrow(mcmcout2nLateralInfl), ]
+
+effectiveSize(pheno2nLateralInflpostburn$N_shifts)
+effectiveSize(pheno2nLateralInflpostburn$logLik)
+
+
+
+### Shift probabilities
+pheno2nLateralInflshift_probs <- summary(pheno2nLateralInfledata)
+pheno2nLateralInflshift_probs
+write.csv(pheno2nLateralInflshift_probs, file = "./phenotype2nLateralInfl/pheno2nLateralInflshift_probs.txt")
+
+### Bayes factors
+pheno2nLateralInflbfmat <- computeBayesFactors(pheno2nLateralInflpostburn, expectedNumberOfShifts=10, burnin=0.15)
+pheno2nLateralInflbfmat
+write.csv(pheno2nLateralInflbfmat, file = "./phenotype2nLateralInfl/pheno2nLateralInflbfmat.txt")
+
+#### PLOT CREDIBLE SHIFTS
+pheno2nLateralInflcss <- credibleShiftSet(pheno2nLateralInfledata, expectedNumberOfShifts=10, threshold=5, set.limit = 0.95)
+pheno2nLateralInflcss
+
+plot.credibleshiftset(pheno2nLateralInflcss)
+
+
+### PLOT BEST SHIFT
+dev.off()
+pheno2nLateralInflbest <- getBestShiftConfiguration(pheno2nLateralInfledata, expectedNumberOfShifts=10)
+pheno2nLateralInflbest
+
+pdffn = paste0("pheno2nLateralInfl", ".best.pdf")
+pdf(file=pdffn, width=6, height=60)
+plot.bammdata(pheno2nLateralInflbest, lwd = 2,label=T,cex=0.5)
+axisPhylo()
+addBAMMshifts(pheno2nLateralInflbest, cex=3)
+dev.off()
+
+pdffn = paste0("pheno22nLateralInfl", ".best.pdf")
+pdf(file=pdffn, width=6, height=18)
+plot.bammdata(pheno2nLateralInflbest, lwd = 2,label=F,cex=0.5)
+axisPhylo()
+addBAMMshifts(pheno2nLateralInflbest, cex=3)
+dev.off()
+
+pdffn = paste0("pheno32nLateralInfl", ".best.pdf")
+pdf(file=pdffn, width=60, height=60)
+plot.bammdata(pheno2nLateralInflbest, method= "polar", lwd = 2,label=T,cex=0.5)
+axisPhylo()
+addBAMMshifts(pheno2nLateralInflbest, cex=3)
+dev.off()
+
+pheno2nLateralInflbest$eventData
+write.csv(pheno2nLateralInflbest$eventData, file ="./phenotype2nLateralInfl/pheno2nLateralInflbest.txt")
+n2nLateralInflMarginalBranchRateMatrix <- getMarginalBranchRateMatrix(pheno2nLateralInflbest)
+
+
+
+morphobranch_matrix2 <- cbind (LateralInflMarginalBranchRateMatrix$beta_branch_matrix, n2nLateralInflMarginalBranchRateMatrix$beta_branch_matrix)
+morphobranch_matrix2
+colnames(morphobranch_matrix2) <- c("LateralInfl", "LateralInfl2n")
+write.csv(morphobranch_matrix2, file="morphobranch_matrix2.csv")
+morphobranch_matrix2 <- read.csv(file= "morphobranch_matrix2.csv")
+
+library(lmPerm)
+names(morphobranch_matrix2)
+dim(morphobranch_matrix2)
+class(morphobranch_matrix2)
+morphobranch_matrix2 <- morphobranch_matrix2[,2:3]
+
+summary(lmp(LateralInfl2n~LateralInfl,data=morphobranch_matrix2, perm="Exact"))
+
+```
+
+
