@@ -14,7 +14,7 @@ library(coda)
 
 ##CULM
 ## load data
-mytreebio <- read.tree("./phenotypeculm/Culm.tree")
+mytreeculm <- read.tree("./phenotypeculm/Culm.tree")
 mcmcoutculm <- read.csv("./phenotypeculm/mcmc_out.txt")
 
 
@@ -171,7 +171,7 @@ summary(lmp(culm2n~culm,data=morphobranch_matrix1, perm="Exact"))
 
 ##LateralInfl
 ## load data
-mytreebio <- read.tree("./phenotypeLateralInfl/LateralInfl.tree")
+mytreeLateralInfl <- read.tree("./phenotypeLateralInfl/LateralInfl.tree")
 mcmcoutLateralInfl <- read.csv("./phenotypeLateralInfl/mcmc_out.txt")
 
 
@@ -326,6 +326,12 @@ class(morphobranch_matrix2)
 morphobranch_matrix2 <- morphobranch_matrix2[,2:3]
 
 summary(lmp(LateralInfl2n~LateralInfl,data=morphobranch_matrix2, perm="Exact"))
+
+PPAculm <- cbind(mytreeculm$tip.label, phenoculmbest$tipLambda[[1]])
+write.csv(PPAculm,file= "PPAculm.csv")
+
+PPALateralInfl <- cbind(mytreeLateralInfl$tip.label, phenoLateralInflbest$tipLambda[[1]])
+write.csv(PPALateralInfl,file= "PPALateralInfl.csv")
 
 ```
 
